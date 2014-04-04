@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<link rel="stylesheet" type="text/css" href="./bower_components/bootstrap/dist/css/bootstrap.min.css">
+		<style type="text/css">
+			.risposta {
+				text-align:center;
+				cursor: pointer;
+			}
+			.domanda {
+				text-align: center;
+			}
+			.container-domande{
+				display : none;
+			}
+			.container-poll {
+				display: none;
+			}
+
+			img {
+				padding-bottom:10px;
+				margin: 0 auto;
+			}
+
+			.page-header{
+				margin-top:10px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class='container'>
+			<div class="row">
+				<div class='page-header col-xs-12 col-sm-12 col-md-12 col-lg-12'>
+					<h3>http://cc.pasella.it</h3>
+					<h3>Votanti <span class="count label label-default">0</span></h3>
+				</div>
+			</div>
+		</div>
+		<div class='container container-domande'>
+			<div class='row'>
+				<div class='domanda col-xs-12 col-sm-12 col-md-12 col-lg-12'>
+					<h1>Cosa scegli?</h1>
+				</div>
+			</div>
+			<div class='row'>
+				<div class='risposta risposta-si col-xs-3 col-sm-3 col-md-3 col-lg-3  col-xs-offset-2 col-sm-offset-2 col-md-offset-2 col-lg-offset-2'>
+					<button class='btn btn-primary btn-lg btn-block'>SI</button>
+				</div>
+				<div class='risposta risposta-no col-xs-3 col-sm-3 col-md-3 col-lg-3  col-xs-offset-2 col-sm-offset-2 col-md-offset-2 col-lg-offset-2'>
+				<button class='btn btn-primary btn-lg btn-block'>NO</button>
+				</div>
+			</div>
+		</div>
+
+		<div class='container container-poll'>
+			<div class='row'>
+				<div class='risposta risposta-android col-xs-4 col-sm-4 col-md-4 col-lg-4'>
+					<img src="img/android.png" class="img-rounded img-responsive" />
+					<div class="progress progress-striped active">
+					  <div class="progress-bar"  style="width: 0%">
+					  </div>
+					</div>
+				</div>
+				<div class='risposta risposta-ios col-xs-4 col-sm-4 col-md-4 col-lg-4'>
+					<img src="img/ios.png" class="img-rounded img-responsive" />
+					<div class="progress progress-striped active">
+					  <div class="progress-bar"  style="width: 0%">
+					  </div>
+					</div>
+				</div>
+				<div class='risposta risposta-windows col-xs-4 col-sm-4 col-md-4 col-lg-4'>
+					<img src="img/windows.png" class="img-rounded img-responsive" />
+					<div class="progress progress-striped active">
+					  <div class="progress-bar"  style="width: 0%">
+					  </div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script type="text/javascript" src='./bower_components/ua-parser-js/src/ua-parser.min.js'></script>
+		<script type="text/javascript" src='./bower_components/jquery/dist/jquery.min.js'></script>
+		<script type="text/javascript" src='./bower_components/touche/dist/touche.min.js'></script>
+		<script type="text/javascript" src='./bower_components/firebase/firebase.js'></script>
+		<script type='text/javascript' src='https://cdn.firebase.com/js/simple-login/1.3.0/firebase-simple-login.js'>
+		</script>
+		<script type="text/javascript">
+		 	var parser = new UAParser();
+	        var browser = parser.getBrowser();
+	        var engine = parser.getEngine();
+	        var os = parser.getOS();
+
+
+			var poll = new Firebase('https://cloudconf-pasella.firebaseio.com');
+			var mioVoto;
+			var countVoti;
+			var auth;
+			var start;
+			var user;
+			var visualizzaDomanda;
+			var total = 0;
+
+			auth = new FirebaseSimpleLogin(poll, function(error, u) {
+				if (error) {
+				    alert("ERRORE, mi space non puoi partecipare al sondaggio.");
+				} else if (u) {
+				  	user = u;
+				    start();
+				} else {
+				    auth.login('anonymous', {
+					  rememberMe: true
+					});
+				}
+			});
+
+			var presence = new Firebase('https://cloudconf-pasella.firebaseio.com/users');
+					$('.count').html(Object.keys(ss.val()).length);
+			});
+
+
+			start = function(){
+				mioVoto = new Firebase('https://cloudconf-pasella.firebaseio.com/users/' + user.id);
+				mioVoto.on("value", function(snap){
+					if(snap.val() === null){
+						visualizzaDomanda();
+					}else{
+						giaRisposto();
+					}
+				})
+
+
+			};
+
+			visualizzaDomanda = function(){
+				$('.container-domande').show();
+				$('.risposta').click("click", function(){
+					var risposta = $(this).text().trim().toLowerCase();
+					mioVoto.update({
+						'risposta'	: risposta,
+						'os' 		: os,
+						'engine'	: engine,
+						'browser'	: browser
+					});
+					countVoti = new Firebase('https://cloudconf-pasella.firebaseio.com/voti/' + os.name.toLowerCase() + '/' + risposta + '/' + user.id);
+					countVoti.update({ f : '1'});
+					giaRisposto();
+				});
+			}
+
+			giaRisposto = function(){
+				$('.container-domande').hide();
+				$('.container-poll').show();
+				countVoti = new Firebase('https://cloudconf-pasella.firebaseio.com/voti');
+				countVoti.on("value", function(ss){
+					var risposte = ss.val();
+					var giuste = 0;
+					var max = 0;
+					var maxOS = [];
+					$(['android', 'windows', 'ios']).each(function(index, _os){
+						if(risposte[_os]){
+							giuste += countRisposte(risposte[_os]);
+							if(countRisposte(risposte[_os]) == max){
+								maxOS.push(_os);
+							}
+							if(countRisposte(risposte[_os]) > max){
+								maxOS = [_os];
+								max = countRisposte(risposte[_os]);
+							}
+						}
+					});
+
+					$(['android', 'windows', 'ios']).each(function(index, _os){
+						if(risposte[_os]){
+							$('.risposta-' + _os + ' .progress-bar').css({
+								width : (countRisposte(risposte[_os])/giuste*100) + '%'
+							});
+						}
+						if($.inArray(_os, maxOS) !== -1){
+							$('.risposta-' + _os + ' .progress-bar').addClass("progress-bar-danger");
+						}else{
+							$('.risposta-' + _os + ' .progress-bar').removeClass("progress-bar-danger");
+						}
+					});
+
+
+				})
+			}
+
+			var countRisposte = function(nodo){
+				if(!nodo.si)
+					return 0;
+				return Object.keys(nodo.si).length;
+			}
+
+
+		</script>
+	</body>
+
+</html>

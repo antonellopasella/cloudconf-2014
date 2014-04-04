@@ -1,0 +1,14 @@
+{
+  "name": "touche",
+  "homepage": "https://github.com/benhowdle89/touche",
+  "_release": "708ba77f1f",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "708ba77f1f30f5d4fc7d2c24dc8fa7bebf89b3f0"
+  },
+  "_source": "git://github.com/benhowdle89/touche.git",
+  "_target": "*",
+  "_originalSource": "git://github.com/benhowdle89/touche.git",
+  "_direct": true
+}

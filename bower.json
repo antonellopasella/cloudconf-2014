@@ -1,0 +1,31 @@
+{
+  "name": "cloudconf-2014",
+  "version": "0.0.0",
+  "authors": [
+    "Antonello Pasella <antonello.pasella@gmail.com>"
+  ],
+  "main": "app/index.html",
+  "keywords": [
+    "firebase",
+    "cloud",
+    "realtime",
+    "javascript"
+  ],
+  "license": "MIT",
+  "homepage": "http://www.pasella.it",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "firebase": "1.0.11",
+    "ua-parser-js": "0.6.2",
+    "bootstrap": "~3.1.1",
+    "jquery": "~2.1.0",
+    "touche": "git://github.com/benhowdle89/touche.git"
+  }
+}
